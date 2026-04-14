@@ -46,13 +46,8 @@ export default function Home() {
     .filter((task) => {
       if (!normalizedQuery) return true;
       return String(task.title ?? "").toLowerCase().includes(normalizedQuery);
-    })
-    .filter((task) => {
-      if (filter === "active") return !task.completed;
-      if (filter === "completed") return task.completed;
-      return true;
     });
-  const visibleTasks = useTaskFilter(filteredTasks, sortOrder);
+  const visibleTasks = useTaskFilter(filteredTasks, filter, sortOrder);
 
   const handleToggleTask = (id) => {
     setTasks((currentTasks) =>

@@ -23,23 +23,30 @@ function getDateValue(task) {
   return task?.createdAt ?? 0;
 }
 
-export default function useTaskFilter(tasks, sortOrder) {
+export default function useTaskFilter(tasks, filter, sortOrder) {
   return useMemo(() => {
-    return tasks.slice().sort((a, b) => {
-      if (sortOrder === "priorityAsc") {
-        return priorityRank(a.priority) - priorityRank(b.priority);
-      }
+    return tasks
+      .filter((task) => {
+        if (filter === "active") return !task.completed;
+        if (filter === "completed") return task.completed;
+        return true;
+      })
+      .slice()
+      .sort((a, b) => {
+        if (sortOrder === "priorityAsc") {
+          return priorityRank(a.priority) - priorityRank(b.priority);
+        }
 
-      if (sortOrder === "priorityDesc") {
-        return priorityRank(b.priority) - priorityRank(a.priority);
-      }
+        if (sortOrder === "priorityDesc") {
+          return priorityRank(b.priority) - priorityRank(a.priority);
+        }
 
-      if (sortOrder === "dateAsc") {
-        return getDateValue(a) - getDateValue(b);
-      }
+        if (sortOrder === "dateAsc") {
+          return getDateValue(a) - getDateValue(b);
+        }
 
-      return getDateValue(b) - getDateValue(a);
-    });
-  }, [tasks, sortOrder]);
+        return getDateValue(b) - getDateValue(a);
+      });
+  }, [tasks, filter, sortOrder]);
 }
 
