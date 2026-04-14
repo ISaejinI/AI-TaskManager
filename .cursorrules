@@ -12,3 +12,4 @@ Règles à suivre :
 - Commente le code en français
 - Pour les pages Next.js, utilise le App Router (src/app/)
 - Exporte les composants de page par défaut (export default)
+- Utilise le design system sauvegardé dans DESIGN.md
