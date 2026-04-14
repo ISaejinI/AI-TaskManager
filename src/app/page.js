@@ -5,23 +5,23 @@ import TaskList from "../components/TaskList";
 
 // Page d'accueil avec tests visuels du composant TaskItem
 export default function Home() {
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState(() => [
     {
-      id: 1,
+      id: crypto.randomUUID(),
       title: "Préparer la roadmap produit",
       description: "Lister les objectifs du sprint et les dépendances clés.",
       priority: "strong",
       completed: false,
     },
     {
-      id: 2,
+      id: crypto.randomUUID(),
       title: "Mettre à jour la documentation API",
       description: "Compléter les exemples d'authentification et de pagination.",
       priority: "medium",
       completed: true,
     },
     {
-      id: 3,
+      id: crypto.randomUUID(),
       title: "Organiser la revue hebdomadaire",
       description: "Partager l'ordre du jour et réserver la salle.",
       priority: "weak",
