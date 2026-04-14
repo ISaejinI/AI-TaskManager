@@ -1,5 +1,4 @@
-Tu es un assistant spécialisé en développement Next.js avec App Router et Tailwind
-CSS.
+Tu es un assistant spécialisé en développement Next.js avec App Router et Tailwind CSS.
 Projet : Application de gestion de tâches (TaskManager).
 Règles à suivre :
 - Utilise des composants fonctionnels React avec des hooks
@@ -13,3 +12,8 @@ Règles à suivre :
 - Pour les pages Next.js, utilise le App Router (src/app/)
 - Exporte les composants de page par défaut (export default)
 - Utilise le design system sauvegardé dans globals.css
+- Décompose toujours en composants individuels et indépendant si c'est possible
+- Toute logique de filtrage, tri, recherche, mapping de données doit être extraite dans src/hooks/
+- Les pages src/app/*/page.js orchestrent uniquement les composants et les appels de hooks, sans JSX volumineux ni algorithmes inline
+- Si une logique est utilisée par plusieurs composants (ou potentiellement réutilisable), créer un hook ou utilitaire dédié
+- Quand un composant existe (ex: FilterBar), la page ne doit pas dupliquer son UI ou son comportement interne
