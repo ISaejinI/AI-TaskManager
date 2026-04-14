@@ -1,27 +1,138 @@
-// Page d'accueil épurée pour TaskManager
+"use client";
+
+import { useState } from "react";
+import TaskItem from "../components/TaskItem";
+
+// Page d'accueil avec tests visuels du composant TaskItem
 export default function Home() {
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      title: "Préparer la roadmap produit",
+      description: "Lister les objectifs du sprint et les dépendances clés.",
+      priority: "strong",
+      completed: false,
+    },
+    {
+      id: 2,
+      title: "Mettre à jour la documentation API",
+      description: "Compléter les exemples d'authentification et de pagination.",
+      priority: "medium",
+      completed: true,
+    },
+    {
+      id: 3,
+      title: "Organiser la revue hebdomadaire",
+      description: "Partager l'ordre du jour et réserver la salle.",
+      priority: "weak",
+      completed: false,
+    },
+  ]);
+
+  const handleToggleTask = (id) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const handleDeleteTask = (id) => {
+    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+  };
+
   return (
-    // Conteneur principal centré
-    <main className="flex flex-1 min-h-screen items-center justify-center bg-zinc-50 dark:bg-black font-sans">
+    <main className="flex flex-1 min-h-screen justify-center bg-surface px-3 pb-12 pt-6 sm:px-6">
       <section
-        className="flex flex-col items-center justify-center gap-8 rounded-xl bg-white/90 dark:bg-zinc-900/80 shadow-lg px-8 py-16"
-        aria-label="Page d'accueil TaskManager"
+        className="flex w-full max-w-6xl flex-col gap-8"
+        aria-label="Page d'accueil TaskManager avec tests de tâches"
       >
-        {/* Titre principal */}
-        <h1 className="text-5xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight mb-2">
-          TaskManager
-        </h1>
-        {/* Sous-titre */}
-        <h2 className="text-xl font-medium text-zinc-600 dark:text-zinc-300 mb-6 text-center">
-          Gérez vos tâches efficacement
-        </h2>
-        {/* Bouton "Commencer" */}
-        <button
-          className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-          aria-label="Commencer à utiliser TaskManager"
-        >
-          Commencer
-        </button>
+        <header className="grid gap-8 rounded-xl bg-surface-container-low p-8 shadow-soft lg:grid-cols-[1.2fr_1fr] lg:items-end">
+          <div className="flex flex-col gap-4">
+            <h1 className="font-display text-display-lg text-on-surface">
+              TaskManager
+            </h1>
+            <p className="max-w-xl text-headline-lg text-on-surface-variant">
+              Gerez vos taches efficacement avec une interface epuree concue
+              pour la clarte mentale.
+            </p>
+            <div className="mt-2 flex items-center gap-4">
+              <button
+                type="button"
+                className="rounded-full bg-primary-gradient px-8 py-3 text-lg font-semibold text-surface-container-lowest shadow-ambient transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Commencer
+              </button>
+              <a
+                href="#liste-taches"
+                className="text-body-md font-semibold text-primary hover:text-primary-strong"
+              >
+                Voir la demo
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <article className="rounded-xl bg-surface-container-lowest p-5 shadow-ambient">
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-on-surface">
+                ◎
+              </div>
+              <h3 className="font-body text-title-lg font-semibold text-on-surface">
+                Focus Absolu
+              </h3>
+              <p className="mt-2 text-body-md text-on-surface-variant">
+                Eliminez les distractions avec une organisation claire.
+              </p>
+            </article>
+
+            <article className="rounded-xl bg-primary p-5 text-surface-container-lowest shadow-soft">
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-lowest/20">
+                ⚡
+              </div>
+              <h3 className="font-body text-title-lg font-semibold">
+                Vitesse Eclair
+              </h3>
+              <p className="mt-2 text-body-md text-surface-container-lowest/80">
+                Une interface reactive qui suit votre rythme.
+              </p>
+            </article>
+
+            <article className="rounded-xl bg-surface-container-lowest p-5 shadow-ambient">
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-on-surface">
+                ▣
+              </div>
+              <h3 className="font-body text-title-lg font-semibold text-on-surface">
+                Analytiques
+              </h3>
+              <p className="mt-2 text-body-md text-on-surface-variant">
+                Suivez vos progres avec des indicateurs lisibles.
+              </p>
+            </article>
+          </div>
+        </header>
+
+        <header className="flex flex-col gap-2 px-2">
+          <h2 className="font-display text-headline-lg text-on-surface">
+            Taches du jour
+          </h2>
+          <p className="text-body-md text-on-surface-variant">
+            Trois taches de test pour valider le composant TaskItem.
+          </p>
+        </header>
+
+        <div id="liste-taches" className="flex flex-col gap-4">
+          {tasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              title={task.title}
+              description={task.description}
+              priority={task.priority}
+              completed={task.completed}
+              onToggle={() => handleToggleTask(task.id)}
+              onDelete={() => handleDeleteTask(task.id)}
+            />
+          ))}
+        </div>
       </section>
     </main>
   );
