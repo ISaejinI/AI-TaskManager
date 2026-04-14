@@ -15,6 +15,7 @@ const PRIORITY_LABELS = {
 export default function TaskItem({
   title,
   description,
+  dueDate,
   priority,
   completed,
   onToggle,
@@ -22,6 +23,9 @@ export default function TaskItem({
 }) {
   const priorityClass = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.weak;
   const priorityLabel = PRIORITY_LABELS[priority] ?? PRIORITY_LABELS.weak;
+  const formattedDueDate = dueDate
+    ? new Date(dueDate).toLocaleDateString("fr-FR")
+    : null;
 
   return (
     <article className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient">
@@ -43,6 +47,11 @@ export default function TaskItem({
           {description ? (
             <p className="mt-2 text-body-md text-on-surface-variant">
               {description}
+            </p>
+          ) : null}
+          {formattedDueDate ? (
+            <p className="mt-2 text-label-md text-on-surface-variant">
+              Date de fin : {formattedDueDate}
             </p>
           ) : null}
 

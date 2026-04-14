@@ -11,6 +11,7 @@ export default function Home() {
     {
       id: crypto.randomUUID(),
       createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+      dueDate: "2026-04-20",
       title: "Préparer la roadmap produit",
       description: "Lister les objectifs du sprint et les dépendances clés.",
       priority: "strong",
@@ -19,6 +20,7 @@ export default function Home() {
     {
       id: crypto.randomUUID(),
       createdAt: Date.now() - 1000 * 60 * 60 * 24,
+      dueDate: "2026-04-18",
       title: "Mettre à jour la documentation API",
       description: "Compléter les exemples d'authentification et de pagination.",
       priority: "medium",
@@ -27,6 +29,7 @@ export default function Home() {
     {
       id: crypto.randomUUID(),
       createdAt: Date.now(),
+      dueDate: "2026-04-16",
       title: "Organiser la revue hebdomadaire",
       description: "Partager l'ordre du jour et réserver la salle.",
       priority: "weak",
