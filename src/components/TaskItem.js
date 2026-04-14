@@ -6,6 +6,12 @@ const PRIORITY_STYLES = {
   weak: "bg-surface-container-high text-on-surface-variant",
 };
 
+const PRIORITY_LABELS = {
+  strong: "Haute",
+  medium: "Moyenne",
+  weak: "Basse",
+};
+
 export default function TaskItem({
   title,
   description,
@@ -15,6 +21,7 @@ export default function TaskItem({
   onDelete,
 }) {
   const priorityClass = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.weak;
+  const priorityLabel = PRIORITY_LABELS[priority] ?? PRIORITY_LABELS.weak;
 
   return (
     <article className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient">
@@ -42,7 +49,7 @@ export default function TaskItem({
           <span
             className={`mt-4 inline-flex rounded-full px-3 py-1 text-label-md ${priorityClass}`}
           >
-            Priorité : {priority}
+            {priorityLabel}
           </span>
         </div>
 
