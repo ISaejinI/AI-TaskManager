@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import FilterBar from "../components/FilterBar";
 import TaskList from "../components/TaskList";
 
 // Page d'accueil avec tests visuels du composant TaskItem
@@ -8,6 +10,7 @@ export default function Home() {
   const [tasks, setTasks] = useState(() => [
     {
       id: crypto.randomUUID(),
+      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
       title: "Préparer la roadmap produit",
       description: "Lister les objectifs du sprint et les dépendances clés.",
       priority: "strong",
@@ -15,6 +18,7 @@ export default function Home() {
     },
     {
       id: crypto.randomUUID(),
+      createdAt: Date.now() - 1000 * 60 * 60 * 24,
       title: "Mettre à jour la documentation API",
       description: "Compléter les exemples d'authentification et de pagination.",
       priority: "medium",
@@ -22,12 +26,48 @@ export default function Home() {
     },
     {
       id: crypto.randomUUID(),
+      createdAt: Date.now(),
       title: "Organiser la revue hebdomadaire",
       description: "Partager l'ordre du jour et réserver la salle.",
       priority: "weak",
       completed: false,
     },
   ]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("date");
+
+  const priorityRank = (p) => {
+    switch (p) {
+      case "weak":
+        return 0;
+      case "medium":
+        return 1;
+      case "strong":
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const visibleTasks = tasks
+    .filter((task) => {
+      if (!normalizedQuery) return true;
+      return String(task.title ?? "").toLowerCase().includes(normalizedQuery);
+    })
+    .filter((task) => {
+      if (filter === "active") return !task.completed;
+      if (filter === "completed") return task.completed;
+      return true;
+    })
+    .toSorted((a, b) => {
+      if (sortOrder === "priority") {
+        return priorityRank(a.priority) - priorityRank(b.priority);
+      }
+
+      return (b.createdAt ?? 0) - (a.createdAt ?? 0);
+    });
 
   const handleToggleTask = (id) => {
     setTasks((currentTasks) =>
@@ -121,8 +161,28 @@ export default function Home() {
         </header>
 
         <div id="liste-taches">
+          <div className="mb-4 flex flex-col gap-3">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <FilterBar currentFilter={filter} onFilterChange={setFilter} />
+              <div className="flex items-center gap-3">
+                <label htmlFor="task-sort" className="sr-only">
+                  Trier les tâches
+                </label>
+                <select
+                  id="task-sort"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  className="rounded-full bg-surface-container-lowest px-4 py-3 text-body-md font-semibold text-on-surface shadow-ambient focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="priority">Priorité</option>
+                  <option value="date">Date</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <TaskList
-            tasks={tasks}
+            tasks={visibleTasks}
             onToggle={handleToggleTask}
             onDelete={handleDeleteTask}
           />
