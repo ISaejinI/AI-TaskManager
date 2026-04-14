@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import TaskItem from "../components/TaskItem";
+import TaskList from "../components/TaskList";
 
 // Page d'accueil avec tests visuels du composant TaskItem
 export default function Home() {
@@ -120,18 +120,12 @@ export default function Home() {
           </p>
         </header>
 
-        <div id="liste-taches" className="flex flex-col gap-4">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              title={task.title}
-              description={task.description}
-              priority={task.priority}
-              completed={task.completed}
-              onToggle={() => handleToggleTask(task.id)}
-              onDelete={() => handleDeleteTask(task.id)}
-            />
-          ))}
+        <div id="liste-taches">
+          <TaskList
+            tasks={tasks}
+            onToggle={handleToggleTask}
+            onDelete={handleDeleteTask}
+          />
         </div>
       </section>
     </main>
