@@ -20,8 +20,7 @@ const AUTH_ERROR_MESSAGES = {
   "auth/user-not-found": "Aucun compte trouve avec cette adresse e-mail.",
   "auth/wrong-password": "Mot de passe incorrect.",
   "auth/too-many-requests": "Trop de tentatives. Reessayez plus tard.",
-  "auth/invalid-credential":
-    "Identifiants invalides. Verifiez votre e-mail et mot de passe.",
+  "auth/invalid-credential": "Identifiants invalides. Verifiez votre e-mail et mot de passe.",
 };
 
 function getFirebaseErrorMessage(firebaseError) {
