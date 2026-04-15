@@ -19,7 +19,7 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/tasks"
+                href="/"
                 className="rounded-full px-4 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 Taches
@@ -27,7 +27,7 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/about"
+                href="/"
                 className="rounded-full px-4 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 A propos

@@ -2,12 +2,10 @@
 
 import ProgressBar from "./ProgressBar";
 import TaskStats from "./TaskStats";
+import useTaskStats from "../hooks/useTaskStats";
 
 export default function Dashboard({ tasks = [] }) {
-  const safeTasks = Array.isArray(tasks) ? tasks : [];
-  const totalTasks = safeTasks.length;
-  const completedTasks = safeTasks.filter((task) => task.completed).length;
-  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const { safeTasks, totalTasks, progress } = useTaskStats(tasks);
 
   return (
     <section aria-label="Tableau de bord" className="flex flex-col gap-4">

@@ -1,10 +1,9 @@
 "use client";
 
+import useTaskStats from "../hooks/useTaskStats";
+
 export default function TaskStats({ tasks = [] }) {
-  const safeTasks = Array.isArray(tasks) ? tasks : [];
-  const totalTasks = safeTasks.length;
-  const completedTasks = safeTasks.filter((task) => task.completed).length;
-  const activeTasks = totalTasks - completedTasks;
+  const { totalTasks, completedTasks, activeTasks } = useTaskStats(tasks);
 
   return (
     <section

@@ -109,7 +109,7 @@ export default function Home() {
               aria-label="Fonctionnalités principales"
             >
               <article className="rounded-xl bg-surface-container-lowest p-5 shadow-ambient">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-on-surface">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-on-surface" aria-hidden="true">
                   {/* Icône illustrative, pure déco */}
                   ◎
                 </div>
@@ -121,7 +121,7 @@ export default function Home() {
                 </p>
               </article>
               <article className="rounded-xl bg-primary p-5 text-surface-container-lowest shadow-soft">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-lowest/20">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-lowest/20" aria-hidden="true">
                   ⚡
                 </div>
                 <h2 className="font-body text-title-lg font-semibold text-lg">
@@ -132,7 +132,7 @@ export default function Home() {
                 </p>
               </article>
               <article className="rounded-xl bg-surface-container-lowest p-5 shadow-ambient">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-on-surface">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-on-surface" aria-hidden="true">
                   ▣
                 </div>
                 <h2 className="font-body text-title-lg font-semibold text-on-surface text-lg">
