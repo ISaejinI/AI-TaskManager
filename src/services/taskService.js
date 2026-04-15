@@ -104,7 +104,7 @@ export async function deleteTask(userId, taskId) {
   }
 }
 
-export function subscribeToTasks(userId, callback) {
+export function subscribeToTasks(userId, callback, onError) {
   if (!userId) {
     throw new Error("Impossible d'ecouter les taches: userId manquant.");
   }
@@ -134,9 +134,11 @@ export function subscribeToTasks(userId, callback) {
         callback(tasks);
       },
       (error) => {
-        throw new Error(
-          `Erreur lors de l'ecoute des taches en temps reel: ${error?.message ?? "inconnue"}.`
-        );
+        if (typeof onError === "function") {
+          onError(
+            `Erreur lors de l'ecoute des taches en temps reel: ${error?.message ?? "inconnue"}.`
+          );
+        }
       }
     );
   } catch (error) {

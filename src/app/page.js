@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
 import TaskList from "../components/TaskList";
 import Dashboard from "../components/Dashboard";
 import useTaskFilter from "../hooks/useTaskFilter";
 import AuthGuard from "../components/AuthGuard";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  addTask,
+  deleteTask,
+  subscribeToTasks,
+  updateTask,
+} from "../services/taskService";
+import AddTaskForm from "../components/AddTaskForm";
 
 /*
   Page d'accueil du TaskManager, orchestrant les composants principaux.
@@ -15,39 +23,45 @@ import AuthGuard from "../components/AuthGuard";
   Le composant AuthGuard protège toute la page pour s'assurer que seul un utilisateur authentifié y accède.
 */
 export default function Home() {
-  // État local des tâches (exemple statique)
-  const [tasks, setTasks] = useState(() => [
-    {
-      id: crypto.randomUUID(),
-      createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
-      dueDate: "2026-04-20",
-      title: "Préparer la roadmap produit",
-      description: "Lister les objectifs du sprint et les dépendances clés.",
-      priority: "strong",
-      completed: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      createdAt: Date.now() - 1000 * 60 * 60 * 24,
-      dueDate: "2026-04-18",
-      title: "Mettre à jour la documentation API",
-      description: "Compléter les exemples d'authentification et de pagination.",
-      priority: "medium",
-      completed: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-      dueDate: "2026-04-16",
-      title: "Organiser la revue hebdomadaire",
-      description: "Partager l'ordre du jour et réserver la salle.",
-      priority: "weak",
-      completed: false,
-    },
-  ]);
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("dateDesc");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setTasks([]);
+      setLoading(false);
+      return undefined;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const unsubscribe = subscribeToTasks(
+        user.uid,
+        (nextTasks) => {
+          setTasks(nextTasks);
+          setError(null);
+          setLoading(false);
+        },
+        (subscriptionError) => {
+          setError(subscriptionError);
+          setLoading(false);
+        }
+      );
+
+      return unsubscribe;
+    } catch (serviceError) {
+      setLoading(false);
+      setError(serviceError.message ?? "Impossible de charger les taches depuis Firestore.");
+      return undefined;
+    }
+  }, [user?.uid]);
 
   // La logique de recherche reste extraite ici, dans l'attente d'un hook dédié
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -59,18 +73,46 @@ export default function Home() {
   // Filtrage et tri via le hook custom
   const visibleTasks = useTaskFilter(filteredTasks, filter, sortOrder);
 
-  // Gestion du toggle completed
-  const handleToggleTask = (id) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  // Handler pour l'ajout de tâche, passé à AddTaskForm
+  const handleAddTask = async ({ title, priority }) => {
+    if (!user?.uid) {
+      throw new Error("Aucun utilisateur connecté.");
+    }
+    await addTask(user.uid, { title, priority });
   };
 
-  // Gestion de la suppression
-  const handleDeleteTask = (id) => {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+  const handleToggleTask = async (id) => {
+    if (!user?.uid) {
+      setError("Aucun utilisateur connecte.");
+      return;
+    }
+
+    const taskToUpdate = tasks.find((task) => task.id === id);
+
+    if (!taskToUpdate) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await updateTask(user.uid, id, { completed: !taskToUpdate.completed });
+    } catch (serviceError) {
+      setError(serviceError.message ?? "Impossible de mettre a jour la tache.");
+    }
+  };
+
+  const handleDeleteTask = async (id) => {
+    if (!user?.uid) {
+      setError("Aucun utilisateur connecte.");
+      return;
+    }
+
+    try {
+      setError(null);
+      await deleteTask(user.uid, id);
+    } catch (serviceError) {
+      setError(serviceError.message ?? "Impossible de supprimer la tache.");
+    }
   };
 
   return (
@@ -162,12 +204,32 @@ export default function Home() {
                 Tâches du jour
               </h2>
               <p className="text-body-md text-on-surface-variant">
-                Trois tâches de test pour valider le composant TaskItem.
+                Retrouvez vos taches synchronisees en temps reel.
               </p>
             </header>
-            {/* Dashboard affiché AVANT la SearchBar */}
+
+            {loading ? (
+              <p
+                role="status"
+                aria-live="polite"
+                className="rounded-xl bg-surface-container-lowest p-4 text-body-md text-on-surface-variant shadow-ambient"
+              >
+                Chargement...
+              </p>
+            ) : null}
+
+            {error ? (
+              <p
+                role="alert"
+                className="rounded-xl bg-danger/10 p-4 text-body-md text-danger shadow-ambient"
+              >
+                {error}
+              </p>
+            ) : null}
+
+            <AddTaskForm onAddTask={handleAddTask} />
+
             <Dashboard tasks={tasks} />
-            {/* Barre de recherche et filtres */}
             <div className="mb-4 flex flex-col gap-3">
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
               <FilterBar
@@ -177,7 +239,6 @@ export default function Home() {
                 onSortChange={setSortOrder}
               />
             </div>
-            {/* Liste des tâches avec gestion toggle et suppression */}
             <TaskList
               tasks={visibleTasks}
               onToggle={handleToggleTask}
