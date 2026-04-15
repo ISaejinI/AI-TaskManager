@@ -89,12 +89,15 @@ export default function Home() {
                 pour la clarté mentale.
               </p>
               <nav aria-label="Actions principales" className="mt-2 flex items-center gap-4">
-                <button
-                  type="button"
+                <a
+                  href="/signup"
                   className="rounded-full bg-primary-gradient px-8 py-3 text-lg font-semibold text-surface-container-lowest shadow-ambient transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  role="button"
+                  tabIndex={0}
                 >
                   Commencer
-                </button>
+                </a>
+           
                 <a
                   href="#liste-taches"
                   className="text-body-md font-semibold text-primary hover:text-primary-strong"

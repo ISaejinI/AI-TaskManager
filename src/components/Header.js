@@ -1,5 +1,7 @@
 import Link from "next/link";
+import UserMenu from "./UserMenu";
 
+// Header de navigation principal avec UserMenu intégré
 export default function Header() {
   return (
     <header className="w-full bg-surface px-6 py-5">
@@ -7,7 +9,8 @@ export default function Header() {
         <h1 className="font-display text-xl font-bold tracking-tight text-on-surface">
           TaskManager
         </h1>
-        <nav aria-label="Navigation principale">
+        {/* Navigation principale + UserMenu à droite */}
+        <nav aria-label="Navigation principale" className="flex items-center gap-4">
           <ul className="flex items-center gap-2 text-body-md font-semibold">
             <li>
               <Link
@@ -34,6 +37,8 @@ export default function Header() {
               </Link>
             </li>
           </ul>
+          {/* Insertion du menu utilisateur à droite de la nav */}
+          <UserMenu />
         </nav>
       </div>
     </header>
