@@ -22,7 +22,7 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/"
+                href="/dashboard"
                 className="rounded-full px-4 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 Taches
