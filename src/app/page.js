@@ -4,6 +4,7 @@ import { useState } from "react";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
 import TaskList from "../components/TaskList";
+import Dashboard from "../components/Dashboard";
 import useTaskFilter from "../hooks/useTaskFilter";
 
 /*
@@ -159,6 +160,8 @@ export default function Home() {
               Trois tâches de test pour valider le composant TaskItem.
             </p>
           </header>
+          {/* Dashboard affiché AVANT la SearchBar */}
+          <Dashboard tasks={tasks} />
           {/* Barre de recherche et filtres */}
           <div className="mb-4 flex flex-col gap-3">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
