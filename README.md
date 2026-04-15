@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TaskManager
 
-## Getting Started
+Application web de gestion de tâches construite avec Next.js (App Router) et Tailwind CSS.
 
-First, run the development server:
+## Demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Production : [https://fir-c2d67.web.app/](https://fir-c2d67.web.app/)
+
+## Fonctionnalites
+
+- Affichage des tâches du jour avec informations clés (titre, description, échéance, priorité)
+- Marquage d'une tâche en complétée / active
+- Suppression d'une tâche
+- Recherche par titre
+- Filtrage par statut : toutes, actives, complétées
+- Tri par date et par priorité
+- Tableau de bord avec statistiques globales :
+  - nombre total de tâches
+  - nombre de tâches complétées
+  - nombre de tâches actives
+  - barre de progression globale
+
+## Stack technique
+
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4
+- ESLint
+
+## Structure du projet
+
+```text
+src/
+  app/
+    layout.js
+    page.js
+  components/
+    Dashboard.js
+    TaskList.js
+    TaskItem.js
+    TaskStats.js
+    ProgressBar.js
+    SearchBar.js
+    FilterBar.js
+    Header.js
+  hooks/
+    useTaskFilter.js
+    useTaskStats.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Prerequis :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 20+ recommande
+- npm
 
-## Learn More
+Installation et lancement en local :
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Application disponible sur [http://localhost:3000](http://localhost:3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+- `npm run dev` : lance le serveur de développement
+- `npm run build` : build de production
+- `npm run start` : lance l'application buildée
+- `npm run lint` : exécute ESLint
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Accessibilite et UX
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Composants UI pensés pour la navigation clavier
+- Utilisation d'attributs ARIA sur les éléments interactifs (filtres, recherche, progression)
+- Gestion des cas limites principaux (liste vide, valeurs invalides sur progression)
+
+## Prochaines ameliorations
+
+- Persistance des tâches (localStorage ou backend)
+- Ajout / édition de tâche via formulaire
+- Pages dédiées pour la navigation (`/tasks`, `/about`)
+- Tests unitaires et tests d'intégration
