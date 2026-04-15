@@ -156,11 +156,6 @@ export default function SignupForm() {
             }
             className="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 text-body-md text-on-surface placeholder:text-on-surface-variant/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
-          {fieldErrors.confirmPassword ? (
-            <p id={confirmPasswordErrorId} className="text-label-sm text-danger">
-              {fieldErrors.confirmPassword}
-            </p>
-          ) : null}
         </div>
 
         <button
