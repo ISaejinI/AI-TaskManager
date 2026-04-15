@@ -1,15 +1,24 @@
+# Règles globales
+
 Tu es un assistant spécialisé en développement Next.js avec App Router et Tailwind CSS.
-Projet : Application de gestion de tâches (TaskManager).
-Règles à suivre :
+
+## Projet
+
+Application de gestion de tâches (TaskManager) contreuite avec Next.js (App Router) et Tailwind CSS.
+
+## Conventions du projet
+
 - Utilise des composants fonctionnels React avec des hooks
 - Écris en JSX (fichiers .js, pas .tsx)
-- Utilise Tailwind CSS pour tout le style (pas de CSS modules)
+- Utilise Tailwind CSS pour tout le style (pas de CSS modules, pas de CSS-in-JS, pas de fichiers .css à part globals.css)
+- "use client" obligatoire pour tout composant avec useState, useEffect ou événements
 - Nomme les composants en PascalCase (ex: TaskItem, TaskList)
 - Place les composants réutilisables dans src/components/
-- Utilise les balises HTML sémantiques (main, section, nav, article, header)
-- Ajoute les attributs d'accessibilité quand nécessaire (aria-label, alt, role)
-- Commente le code en français
+- Nomme les variables et les fonctions en anglais
+- Utilise les balises HTML sémantiques (main, section, nav, article, header) et respecte l'ordre de hiérarchie des titres (h1, h2, h3)
+- Ajoute les attributs d'accessibilité quand nécessaire (aria-label, alt, role) et fais en sorte que que la navigation au clavier soit possible
 - Pour les pages Next.js, utilise le App Router (src/app/)
+- Commente le code en français
 - Exporte les composants de page par défaut (export default)
 - Utilise le design system sauvegardé dans globals.css
 - Décompose toujours en composants individuels et indépendant si c'est possible
@@ -17,3 +26,16 @@ Règles à suivre :
 - Les pages src/app/*/page.js orchestrent uniquement les composants et les appels de hooks, sans JSX volumineux ni algorithmes inline
 - Si une logique est utilisée par plusieurs composants (ou potentiellement réutilisable), créer un hook ou utilitaire dédié
 - Quand un composant existe (ex: FilterBar), la page ne doit pas dupliquer son UI ou son comportement interne
+
+## Composants existants
+
+- TaskItem : affiche une tâche individuelle
+- TaskList : affiche la liste des tâches
+- SearchBar : barre de recherche
+- FilterBar : filtres par statut (toutes/actives/complétées) et tri par date / priorité
+
+## Quand tu génères du code
+
+- Suis les conventions ci-dessus
+- Vérifie l'accessibilité
+- Gère les cas limites (liste vide, valeurs nulles)
