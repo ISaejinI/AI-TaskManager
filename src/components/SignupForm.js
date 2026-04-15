@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function SignupForm() {
   const { signUp, error } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -56,6 +58,7 @@ export default function SignupForm() {
     try {
       setIsSubmitting(true);
       await signUp(email.trim(), password);
+      router.replace("/");
     } finally {
       setIsSubmitting(false);
     }
