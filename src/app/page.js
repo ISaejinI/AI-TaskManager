@@ -113,7 +113,7 @@ export default function Home() {
                   {/* Icône illustrative, pure déco */}
                   ◎
                 </div>
-                <h2 className="font-body text-title-lg font-semibold text-on-surface text-lg">
+                <h2 className="font-body text-title-lg font-semibold text-on-surface">
                   Focus Absolu
                 </h2>
                 <p className="mt-2 text-body-md text-on-surface-variant">
@@ -124,7 +124,7 @@ export default function Home() {
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-lowest/20" aria-hidden="true">
                   ⚡
                 </div>
-                <h2 className="font-body text-title-lg font-semibold text-lg">
+                <h2 className="font-body text-title-lg font-semibold">
                   Vitesse Éclair
                 </h2>
                 <p className="mt-2 text-body-md text-surface-container-lowest/80">
@@ -135,7 +135,7 @@ export default function Home() {
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-high text-on-surface" aria-hidden="true">
                   ▣
                 </div>
-                <h2 className="font-body text-title-lg font-semibold text-on-surface text-lg">
+                <h2 className="font-body text-title-lg font-semibold text-on-surface">
                   Analytiques
                 </h2>
                 <p className="mt-2 text-body-md text-on-surface-variant">
