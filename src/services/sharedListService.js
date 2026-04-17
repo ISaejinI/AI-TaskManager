@@ -17,6 +17,23 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
+function getFirestoreErrorMessage(error) {
+  const code = error?.code ?? "";
+
+  switch (code) {
+    case "permission-denied":
+      return "Acces refuse. Vous n'avez pas la permission.";
+    case "not-found":
+      return "Cette ressource n'existe plus.";
+    case "unavailable":
+      return "Service temporairement indisponible. Verifiez votre connexion.";
+    case "unauthenticated":
+      return "Vous devez etre connecte pour effectuer cette action.";
+    default:
+      return "Une erreur est survenue. Veuillez reessayer.";
+  }
+}
+
 function getSharedListsCollection() {
   return collection(db, "sharedLists");
 }
@@ -92,9 +109,7 @@ export async function createSharedList(userId, name) {
       createdAt: serverTimestamp(),
     });
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la creation de la liste partagee: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -108,9 +123,7 @@ export async function getUserSharedLists(userId) {
     const snapshot = await getDocs(listsQuery);
     return sortByCreatedAtDesc(snapshot.docs.map(mapSharedList));
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la recuperation des listes partagees: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -133,16 +146,12 @@ export function subscribeToSharedLists(userId, callback, onError) {
       },
       (error) => {
         if (typeof onError === "function") {
-          onError(`Erreur lors de l'ecoute des listes partagees: ${error?.message ?? "inconnue"}.`);
+          onError(getFirestoreErrorMessage(error));
         }
       }
     );
   } catch (error) {
-    throw new Error(
-      `Erreur lors de l'initialisation de l'ecoute des listes partagees: ${
-        error?.message ?? "inconnue"
-      }.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -192,7 +201,7 @@ export async function addMemberToList(listId, email) {
       members: arrayUnion(memberUserId),
     });
   } catch (error) {
-    throw new Error(`Erreur lors de l'ajout du membre: ${error?.message ?? "inconnue"}.`);
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -223,7 +232,7 @@ export async function removeMemberFromList(listId, userId, requesterUserId = use
       members: arrayRemove(userId),
     });
   } catch (error) {
-    throw new Error(`Erreur lors du retrait du membre: ${error?.message ?? "inconnue"}.`);
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -255,9 +264,7 @@ export async function deleteSharedList(listId, userId) {
     await Promise.all(tasksSnapshot.docs.map((taskDoc) => deleteDoc(taskDoc.ref)));
     await deleteDoc(listRef);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la suppression de la liste partagee: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -271,9 +278,7 @@ export async function getSharedListTasks(listId) {
     const snapshot = await getDocs(tasksQuery);
     return snapshot.docs.map(mapSharedTask);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la recuperation des taches partagees: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -305,7 +310,7 @@ export async function addSharedTask(listId, userId, task = {}) {
       addedBy: userId,
     });
   } catch (error) {
-    throw new Error(`Erreur lors de l'ajout de la tache partagee: ${error?.message ?? "inconnue"}.`);
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -322,9 +327,7 @@ export async function updateSharedTask(listId, taskId, updates = {}) {
     const taskRef = doc(db, "sharedLists", listId, "tasks", taskId);
     await updateDoc(taskRef, updates);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la mise a jour de la tache partagee: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -341,9 +344,7 @@ export async function deleteSharedTask(listId, taskId) {
     const taskRef = doc(db, "sharedLists", listId, "tasks", taskId);
     await deleteDoc(taskRef);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la suppression de la tache partagee: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -366,15 +367,11 @@ export function subscribeToSharedTasks(listId, callback, onError) {
       },
       (error) => {
         if (typeof onError === "function") {
-          onError(`Erreur lors de l'ecoute des taches partagees: ${error?.message ?? "inconnue"}.`);
+          onError(getFirestoreErrorMessage(error));
         }
       }
     );
   } catch (error) {
-    throw new Error(
-      `Erreur lors de l'initialisation de l'ecoute des taches partagees: ${
-        error?.message ?? "inconnue"
-      }.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }

@@ -12,6 +12,23 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
+function getFirestoreErrorMessage(error) {
+  const code = error?.code ?? "";
+
+  switch (code) {
+    case "permission-denied":
+      return "Acces refuse. Vous n'avez pas la permission.";
+    case "not-found":
+      return "Cette ressource n'existe plus.";
+    case "unavailable":
+      return "Service temporairement indisponible. Verifiez votre connexion.";
+    case "unauthenticated":
+      return "Vous devez etre connecte pour effectuer cette action.";
+    default:
+      return "Une erreur est survenue. Veuillez reessayer.";
+  }
+}
+
 function getUserTasksCollection(userId) {
   return collection(db, "users", userId, "tasks");
 }
@@ -39,9 +56,7 @@ export async function getUserTasks(userId) {
       };
     });
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la recuperation des taches utilisateur: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -68,7 +83,7 @@ export async function addTask(userId, task = {}) {
       createdAt: serverTimestamp(),
     });
   } catch (error) {
-    throw new Error(`Erreur lors de l'ajout de la tache: ${error?.message ?? "inconnue"}.`);
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -85,9 +100,7 @@ export async function updateTask(userId, taskId, updates = {}) {
     const taskRef = doc(db, "users", userId, "tasks", taskId);
     await updateDoc(taskRef, updates);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la mise a jour de la tache: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -104,9 +117,7 @@ export async function deleteTask(userId, taskId) {
     const taskRef = doc(db, "users", userId, "tasks", taskId);
     await deleteDoc(taskRef);
   } catch (error) {
-    throw new Error(
-      `Erreur lors de la suppression de la tache: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
 
@@ -131,8 +142,8 @@ export function subscribeToTasks(userId, callback, onError) {
           return {
             id: taskDoc.id,
             title: data.title ?? "",
-          description: data.description ?? "",
-          dueDate: data.dueDate ?? null,
+            description: data.description ?? "",
+            dueDate: data.dueDate ?? null,
             completed: Boolean(data.completed),
             priority: data.priority ?? "medium",
             createdAt: data.createdAt ?? null,
@@ -143,15 +154,11 @@ export function subscribeToTasks(userId, callback, onError) {
       },
       (error) => {
         if (typeof onError === "function") {
-          onError(
-            `Erreur lors de l'ecoute des taches en temps reel: ${error?.message ?? "inconnue"}.`
-          );
+          onError(getFirestoreErrorMessage(error));
         }
       }
     );
   } catch (error) {
-    throw new Error(
-      `Erreur lors de l'initialisation de l'ecoute des taches: ${error?.message ?? "inconnue"}.`
-    );
+    throw new Error(getFirestoreErrorMessage(error));
   }
 }
