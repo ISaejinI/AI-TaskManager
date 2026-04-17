@@ -6,6 +6,7 @@ import CreateListForm from "../../components/CreateListForm";
 import SharedListCard from "../../components/SharedListCard";
 import SharedListView from "../../components/SharedListView";
 import { useAuth } from "../../contexts/AuthContext";
+import useSharedLists from "../../hooks/useSharedLists";
 import {
   addMemberToList,
   addSharedTask,
@@ -14,50 +15,16 @@ import {
   deleteSharedTask,
   getSharedListTasks,
   removeMemberFromList,
-  subscribeToSharedLists,
   subscribeToSharedTasks,
   updateSharedTask,
 } from "../../services/sharedListService";
 
 export default function SharedListsPage() {
   const { user } = useAuth();
-  const [sharedLists, setSharedLists] = useState([]);
+  const { sharedLists, sharedListsWithStats, loading, error, setError } = useSharedLists(user?.uid);
   const [selectedListId, setSelectedListId] = useState(null);
   const [selectedListTasks, setSelectedListTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setSharedLists([]);
-      setLoading(false);
-      return undefined;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const unsubscribe = subscribeToSharedLists(
-        user.uid,
-        (lists) => {
-          setSharedLists(Array.isArray(lists) ? lists : []);
-          setLoading(false);
-        },
-        (subscriptionError) => {
-          setError(subscriptionError);
-          setLoading(false);
-        }
-      );
-
-      return unsubscribe;
-    } catch (serviceError) {
-      setError(serviceError?.message ?? "Impossible de charger les listes partagees.");
-      setLoading(false);
-      return undefined;
-    }
-  }, [user?.uid]);
 
   const selectedList = useMemo(() => {
     if (!selectedListId) {
@@ -194,27 +161,6 @@ export default function SharedListsPage() {
       setError(serviceError?.message ?? "Impossible de supprimer la tache partagee.");
     }
   };
-
-  const sharedListsWithStats = useMemo(() => {
-    if (!selectedList?.id) {
-      return sharedLists;
-    }
-
-    return sharedLists.map((list) => {
-      if (list.id !== selectedList.id) {
-        return list;
-      }
-
-      const totalTasks = selectedListTasks.length;
-      const completedTasks = selectedListTasks.filter((task) => Boolean(task?.completed)).length;
-
-      return {
-        ...list,
-        totalTasks,
-        completedTasks,
-      };
-    });
-  }, [selectedList?.id, selectedListTasks, sharedLists]);
 
   return (
     <AuthGuard>
