@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useMemo, useState } from "react";
+import { db } from "../lib/firebase";
 import AddTaskForm from "./AddTaskForm";
 
 function formatMember(member) {
@@ -32,6 +34,7 @@ export default function SharedListView({
   const [memberEmail, setMemberEmail] = useState("");
   const [memberError, setMemberError] = useState(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
+  const [userEmailById, setUserEmailById] = useState({});
 
   const safeList = list ?? {};
   const listName = String(safeList.name ?? "").trim() || "Liste partagee";
@@ -40,8 +43,64 @@ export default function SharedListView({
 
   const normalizedMembers = useMemo(() => {
     const sourceMembers = Array.isArray(members) ? members : safeList.members;
-    return (Array.isArray(sourceMembers) ? sourceMembers : []).map(formatMember);
-  }, [members, safeList.members]);
+    return (Array.isArray(sourceMembers) ? sourceMembers : []).map((member) => {
+      const formattedMember = formatMember(member);
+      const resolvedEmail = userEmailById[formattedMember.id];
+
+      return {
+        ...formattedMember,
+        label: resolvedEmail || formattedMember.label,
+      };
+    });
+  }, [members, safeList.members, userEmailById]);
+
+  useEffect(() => {
+    const sourceMembers = Array.isArray(members) ? members : safeList.members;
+    const memberIds = (Array.isArray(sourceMembers) ? sourceMembers : [])
+      .map((member) => formatMember(member).id)
+      .filter(Boolean);
+    const taskUserIds = safeTasks
+      .map((task) => String(task?.addedBy ?? "").trim())
+      .filter(Boolean);
+
+    const idsToResolve = Array.from(new Set([...memberIds, ...taskUserIds]));
+
+    if (idsToResolve.length === 0) {
+      setUserEmailById({});
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchUserEmails = async () => {
+      const resolvedEntries = await Promise.all(
+        idsToResolve.map(async (userId) => {
+          try {
+            const userSnapshot = await getDoc(doc(db, "users", userId));
+            const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+            const email =
+              typeof userData?.email === "string" && userData.email.trim()
+                ? userData.email.trim()
+                : null;
+
+            return [userId, email];
+          } catch {
+            return [userId, null];
+          }
+        })
+      );
+
+      if (!cancelled) {
+        setUserEmailById(Object.fromEntries(resolvedEntries.filter(([, email]) => Boolean(email))));
+      }
+    };
+
+    fetchUserEmails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [members, safeList.members, safeTasks]);
 
   const handleAddMemberSubmit = async (event) => {
     event.preventDefault();
@@ -206,7 +265,9 @@ export default function SharedListView({
                         </p>
                       ) : null}
                       <p className="mt-2 text-label-md text-on-surface-variant">
-                        Ajoutee par : {String(task?.addedBy ?? "Utilisateur inconnu")}
+                        Ajoutee par :{" "}
+                        {userEmailById[String(task?.addedBy ?? "")] ??
+                          String(task?.addedByEmail ?? task?.addedBy ?? "Utilisateur inconnu")}
                       </p>
                     </div>
 

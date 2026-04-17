@@ -16,6 +16,8 @@ export default function TaskItem({
   title,
   description,
   dueDate,
+  addedBy,
+  addedByEmail,
   priority,
   completed,
   onToggle,
@@ -40,6 +42,7 @@ export default function TaskItem({
     parsedDueDate && !Number.isNaN(parsedDueDate.getTime())
       ? parsedDueDate.toLocaleDateString("fr-FR")
       : null;
+  const authorLabel = String(addedByEmail ?? addedBy ?? "").trim();
 
   return (
     <article className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient">
@@ -67,6 +70,9 @@ export default function TaskItem({
             <p className="mt-2 text-label-md text-on-surface-variant">
               Date limite : {formattedDueDate}
             </p>
+          ) : null}
+          {authorLabel ? (
+            <p className="mt-2 text-label-md text-on-surface-variant">Ajoutee par : {authorLabel}</p>
           ) : null}
 
           <span
