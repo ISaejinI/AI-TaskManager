@@ -26,6 +26,8 @@ Application de gestion de tâches (TaskManager) contreuite avec Next.js (App Rou
 - Les pages src/app/*/page.js orchestrent uniquement les composants et les appels de hooks, sans JSX volumineux ni algorithmes inline
 - Si une logique est utilisée par plusieurs composants (ou potentiellement réutilisable), créer un hook ou utilitaire dédié
 - Quand un composant existe (ex: FilterBar), la page ne doit pas dupliquer son UI ou son comportement interne
+- Externalise au maximum la logique métier dans des hooks, il ne doit preque pas en avoir dans les pages
+- Quand tu refactorise quelque chose fais attention à ce que la fonctionnalité reste fonctionnelle
 
 ## Composants existants
 
