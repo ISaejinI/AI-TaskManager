@@ -38,13 +38,32 @@ async function syncUserProfile(nextUser) {
 
   const normalizedEmail = String(nextUser.email ?? "").trim().toLowerCase();
 
-  // Synchronise un document utilisateur pour permettre les requetes par email.
   await setDoc(
     doc(db, "users", nextUser.uid),
     {
       uid: nextUser.uid,
       email: normalizedEmail,
       emailLowercase: normalizedEmail,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+async function syncCreatedUserProfile(nextUser, fallbackEmail = "") {
+  if (!nextUser?.uid) {
+    return;
+  }
+
+  const normalizedEmail = String(nextUser.email ?? fallbackEmail ?? "").trim().toLowerCase();
+
+  await setDoc(
+    doc(db, "users", nextUser.uid),
+    {
+      uid: nextUser.uid,
+      email: normalizedEmail,
+      emailLowercase: normalizedEmail,
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -86,22 +105,9 @@ export function AuthProvider({ children }) {
       setError(null);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const createdUser = userCredential?.user;
-      const normalizedEmail = String(createdUser?.email ?? email ?? "").trim().toLowerCase();
 
-      if (createdUser?.uid) {
-        // Cree immediatement le document Firestore a l'inscription.
-        await setDoc(
-          doc(db, "users", createdUser.uid),
-          {
-            uid: createdUser.uid,
-            email: normalizedEmail,
-            emailLowercase: normalizedEmail,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
+      // Cree immediatement le document Firestore a l'inscription.
+      await syncCreatedUserProfile(createdUser, email);
 
       return userCredential;
     } catch (firebaseError) {

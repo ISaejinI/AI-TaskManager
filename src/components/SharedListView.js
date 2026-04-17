@@ -39,12 +39,13 @@ export default function SharedListView({
   const listName = String(safeList.name ?? "").trim() || "Liste partagee";
   const isOwner = Boolean(currentUserId) && safeList.ownerId === currentUserId;
   const safeTasks = useMemo(() => (Array.isArray(tasks) ? tasks : []), [tasks]);
-  const sourceMembers = Array.isArray(members) ? members : safeList.members;
+  const sourceMembers = useMemo(
+    () => (Array.isArray(members) ? members : Array.isArray(safeList.members) ? safeList.members : []),
+    [members, safeList.members]
+  );
 
   const userIdsToResolve = useMemo(() => {
-    const memberIds = (Array.isArray(sourceMembers) ? sourceMembers : [])
-      .map((member) => formatMember(member).id)
-      .filter(Boolean);
+    const memberIds = sourceMembers.map((member) => formatMember(member).id).filter(Boolean);
     const taskUserIds = safeTasks.map((task) => String(task?.addedBy ?? "").trim()).filter(Boolean);
 
     return Array.from(new Set([...memberIds, ...taskUserIds]));
@@ -53,7 +54,7 @@ export default function SharedListView({
   const userEmailById = useUserEmailMap(userIdsToResolve);
 
   const normalizedMembers = useMemo(() => {
-    return (Array.isArray(sourceMembers) ? sourceMembers : []).map((member) => {
+    return sourceMembers.map((member) => {
       const formattedMember = formatMember(member);
       const resolvedEmail = userEmailById[formattedMember.id];
 
