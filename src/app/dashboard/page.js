@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import AddTaskForm from "../../components/AddTaskForm";
 import AuthGuard from "../../components/AuthGuard";
 import Dashboard from "../../components/Dashboard";
@@ -8,95 +7,25 @@ import FilterBar from "../../components/FilterBar";
 import SearchBar from "../../components/SearchBar";
 import TaskList from "../../components/TaskList";
 import { useAuth } from "../../contexts/AuthContext";
-import useTaskFilter from "../../hooks/useTaskFilter";
-import useTaskSearch from "../../hooks/useTaskSearch";
-import { addTask, deleteTask, subscribeToTasks, updateTask } from "../../services/taskService";
+import useDashboardTasks from "../../hooks/useDashboardTasks";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("dateDesc");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setTasks([]);
-      setLoading(false);
-      return undefined;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const unsubscribe = subscribeToTasks(
-        user.uid,
-        (nextTasks) => {
-          setTasks(nextTasks);
-          setError(null);
-          setLoading(false);
-        },
-        (subscriptionError) => {
-          setError(subscriptionError);
-          setLoading(false);
-        }
-      );
-
-      return unsubscribe;
-    } catch (serviceError) {
-      setLoading(false);
-      setError(serviceError.message ?? "Impossible de charger les taches.");
-      return undefined;
-    }
-  }, [user?.uid]);
-
-  const searchedTasks = useTaskSearch(tasks, searchQuery);
-  const visibleTasks = useTaskFilter(searchedTasks, filter, sortOrder);
-
-  const handleAddTask = async ({ title, description, dueDate, priority }) => {
-    if (!user?.uid) {
-      throw new Error("Aucun utilisateur connecte.");
-    }
-
-    await addTask(user.uid, { title, description, dueDate, priority });
-  };
-
-  const handleToggleTask = async (id) => {
-    if (!user?.uid) {
-      setError("Aucun utilisateur connecte.");
-      return;
-    }
-
-    const taskToUpdate = tasks.find((task) => task.id === id);
-
-    if (!taskToUpdate) {
-      return;
-    }
-
-    try {
-      setError(null);
-      await updateTask(user.uid, id, { completed: !taskToUpdate.completed });
-    } catch (serviceError) {
-      setError(serviceError.message ?? "Impossible de mettre a jour la tache.");
-    }
-  };
-
-  const handleDeleteTask = async (id) => {
-    if (!user?.uid) {
-      setError("Aucun utilisateur connecte.");
-      return;
-    }
-
-    try {
-      setError(null);
-      await deleteTask(user.uid, id);
-    } catch (serviceError) {
-      setError(serviceError.message ?? "Impossible de supprimer la tache.");
-    }
-  };
+  const {
+    tasks,
+    visibleTasks,
+    searchQuery,
+    setSearchQuery,
+    filter,
+    setFilter,
+    sortOrder,
+    setSortOrder,
+    loading,
+    error,
+    createTask,
+    toggleTask,
+    removeTask,
+  } = useDashboardTasks(user?.uid);
 
   return (
     <AuthGuard>
@@ -128,7 +57,7 @@ export default function DashboardPage() {
             </p>
           ) : null}
 
-          <AddTaskForm onAddTask={handleAddTask} />
+          <AddTaskForm onAddTask={createTask} />
           <Dashboard tasks={tasks} />
 
           <div className="mb-2 flex flex-col gap-3">
@@ -141,7 +70,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <TaskList tasks={visibleTasks} onToggle={handleToggleTask} onDelete={handleDeleteTask} />
+          <TaskList tasks={visibleTasks} onToggle={toggleTask} onDelete={removeTask} />
         </section>
       </main>
     </AuthGuard>
