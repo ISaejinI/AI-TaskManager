@@ -41,3 +41,4 @@ Application de gestion de tâches (TaskManager) contreuite avec Next.js (App Rou
 - Suis les conventions ci-dessus
 - Vérifie l'accessibilité
 - Gère les cas limites (liste vide, valeurs nulles)
+- Vérifie que la fonctionnalité n'existe pas déjà quelque part dans l'app si elle existe alors en créer une version réutilisable par exemple dans un hook
