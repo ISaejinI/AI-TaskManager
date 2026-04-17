@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { buildRequiredFieldErrors, hasFieldErrors } from "../lib/formValidation";
 
 export default function SignupForm() {
   const { signUp, error } = useAuth();
@@ -24,28 +25,27 @@ export default function SignupForm() {
   const confirmPasswordErrorId = "signup-confirm-password-error";
 
   const validateFields = () => {
-    const nextFieldErrors = {
-      email: null,
-      password: null,
-      confirmPassword: null,
-    };
+    const nextFieldErrors = buildRequiredFieldErrors({
+      email: {
+        value: email,
+        message: "L'adresse e-mail est requise.",
+      },
+      password: {
+        value: password,
+        message: "Le mot de passe est requis.",
+      },
+      confirmPassword: {
+        value: confirmPassword,
+        message: "La confirmation du mot de passe est requise.",
+      },
+    });
 
-    if (!email.trim()) {
-      nextFieldErrors.email = "L'adresse e-mail est requise.";
-    }
-
-    if (!password.trim()) {
-      nextFieldErrors.password = "Le mot de passe est requis.";
-    }
-
-    if (!confirmPassword.trim()) {
-      nextFieldErrors.confirmPassword = "La confirmation du mot de passe est requise.";
-    } else if (password !== confirmPassword) {
+    if (!nextFieldErrors.confirmPassword && password !== confirmPassword) {
       nextFieldErrors.confirmPassword = "Les mots de passe ne correspondent pas.";
     }
 
     setFieldErrors(nextFieldErrors);
-    return !nextFieldErrors.email && !nextFieldErrors.password && !nextFieldErrors.confirmPassword;
+    return !hasFieldErrors(nextFieldErrors);
   };
 
   const handleSubmit = async (event) => {
