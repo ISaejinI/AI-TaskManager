@@ -13,6 +13,7 @@ Quand tu crées ou modifies un composant :
 - Accessibilité : labels, aria-attributes, navigation clavier
 - Structure : imports → composant → export default
 - Gère le cas "données vides" (liste vide, valeur nulle)
+- Regarde si des fonctions dont le composant a besoin peuvent être réutilisées et partagées entre différents fichiers et être utilisées en tant que hook
 
 Quand tu modifies un fichier existant :
 
