@@ -10,7 +10,7 @@ function formatMember(member) {
 
   if (member && typeof member === "object") {
     const memberId = String(member.id ?? member.uid ?? member.userId ?? "");
-    const label = String(member.email ?? member.displayName ?? member.name ?? memberId || "Membre");
+    const label = String((member.email ?? member.displayName ?? member.name ?? memberId) || "Membre");
     return { id: memberId, label };
   }
 

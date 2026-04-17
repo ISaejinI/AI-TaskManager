@@ -9,7 +9,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
 
 const AuthContext = createContext(null);
 
@@ -30,6 +31,26 @@ function getFirebaseErrorMessage(firebaseError) {
   );
 }
 
+async function syncUserProfile(nextUser) {
+  if (!nextUser?.uid) {
+    return;
+  }
+
+  const normalizedEmail = String(nextUser.email ?? "").trim().toLowerCase();
+
+  // Synchronise un document utilisateur pour permettre les requetes par email.
+  await setDoc(
+    doc(db, "users", nextUser.uid),
+    {
+      uid: nextUser.uid,
+      email: normalizedEmail,
+      emailLowercase: normalizedEmail,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,10 +59,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(
       auth,
-      (nextUser) => {
-        setUser(nextUser);
-        setLoading(false);
-        setError(null);
+      async (nextUser) => {
+        try {
+          await syncUserProfile(nextUser);
+          setUser(nextUser);
+          setError(null);
+        } catch (syncError) {
+          setUser(nextUser);
+          setError(syncError?.message ?? "Impossible de synchroniser le profil utilisateur.");
+        } finally {
+          setLoading(false);
+        }
       },
       (firebaseError) => {
         setUser(null);
@@ -56,7 +84,26 @@ export function AuthProvider({ children }) {
   const signUp = async (email, password) => {
     try {
       setError(null);
-      return await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const createdUser = userCredential?.user;
+      const normalizedEmail = String(createdUser?.email ?? email ?? "").trim().toLowerCase();
+
+      if (createdUser?.uid) {
+        // Cree immediatement le document Firestore a l'inscription.
+        await setDoc(
+          doc(db, "users", createdUser.uid),
+          {
+            uid: createdUser.uid,
+            email: normalizedEmail,
+            emailLowercase: normalizedEmail,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+
+      return userCredential;
     } catch (firebaseError) {
       const readableError = getFirebaseErrorMessage(firebaseError);
       setError(readableError);

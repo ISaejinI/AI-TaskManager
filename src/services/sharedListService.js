@@ -50,6 +50,27 @@ function mapSharedTask(taskDoc) {
   };
 }
 
+function getDateSortValue(value) {
+  if (!value) {
+    return 0;
+  }
+
+  if (typeof value?.toMillis === "function") {
+    return value.toMillis();
+  }
+
+  if (typeof value?.seconds === "number") {
+    return value.seconds * 1000;
+  }
+
+  const parsedDate = new Date(value).getTime();
+  return Number.isNaN(parsedDate) ? 0 : parsedDate;
+}
+
+function sortByCreatedAtDesc(items) {
+  return [...items].sort((a, b) => getDateSortValue(b.createdAt) - getDateSortValue(a.createdAt));
+}
+
 export async function createSharedList(userId, name) {
   if (!userId) {
     throw new Error("Impossible de creer la liste partagee: userId manquant.");
@@ -81,13 +102,9 @@ export async function getUserSharedLists(userId) {
   }
 
   try {
-    const listsQuery = query(
-      getSharedListsCollection(),
-      where("members", "array-contains", userId),
-      orderBy("createdAt", "desc")
-    );
+    const listsQuery = query(getSharedListsCollection(), where("members", "array-contains", userId));
     const snapshot = await getDocs(listsQuery);
-    return snapshot.docs.map(mapSharedList);
+    return sortByCreatedAtDesc(snapshot.docs.map(mapSharedList));
   } catch (error) {
     throw new Error(
       `Erreur lors de la recuperation des listes partagees: ${error?.message ?? "inconnue"}.`
@@ -95,7 +112,7 @@ export async function getUserSharedLists(userId) {
   }
 }
 
-export function subscribeToSharedLists(userId, callback) {
+export function subscribeToSharedLists(userId, callback, onError) {
   if (!userId) {
     throw new Error("Impossible d'ecouter les listes partagees: userId manquant.");
   }
@@ -105,21 +122,17 @@ export function subscribeToSharedLists(userId, callback) {
   }
 
   try {
-    const listsQuery = query(
-      getSharedListsCollection(),
-      where("members", "array-contains", userId),
-      orderBy("createdAt", "desc")
-    );
+    const listsQuery = query(getSharedListsCollection(), where("members", "array-contains", userId));
 
     return onSnapshot(
       listsQuery,
       (snapshot) => {
-        callback(snapshot.docs.map(mapSharedList));
+        callback(sortByCreatedAtDesc(snapshot.docs.map(mapSharedList)));
       },
       (error) => {
-        throw new Error(
-          `Erreur lors de l'ecoute des listes partagees: ${error?.message ?? "inconnue"}.`
-        );
+        if (typeof onError === "function") {
+          onError(`Erreur lors de l'ecoute des listes partagees: ${error?.message ?? "inconnue"}.`);
+        }
       }
     );
   } catch (error) {
@@ -143,18 +156,34 @@ export async function addMemberToList(listId, email) {
       throw new Error("Impossible d'ajouter un membre: email manquant.");
     }
 
-    const usersQuery = query(
+    const usersByLowercaseQuery = query(
       collection(db, "users"),
-      where("email", "==", normalizedEmail),
+      where("emailLowercase", "==", normalizedEmail),
       limit(1)
     );
-    const usersSnapshot = await getDocs(usersQuery);
+    const usersByLowercaseSnapshot = await getDocs(usersByLowercaseQuery);
 
-    if (usersSnapshot.empty) {
+    let memberUserId = null;
+
+    if (!usersByLowercaseSnapshot.empty) {
+      memberUserId = usersByLowercaseSnapshot.docs[0].id;
+    } else {
+      const usersByEmailQuery = query(
+        collection(db, "users"),
+        where("email", "==", normalizedEmail),
+        limit(1)
+      );
+      const usersByEmailSnapshot = await getDocs(usersByEmailQuery);
+
+      if (!usersByEmailSnapshot.empty) {
+        memberUserId = usersByEmailSnapshot.docs[0].id;
+      }
+    }
+
+    if (!memberUserId) {
       throw new Error("Aucun utilisateur trouve avec cet email.");
     }
 
-    const memberUserId = usersSnapshot.docs[0].id;
     const listRef = doc(db, "sharedLists", listId);
 
     await updateDoc(listRef, {
@@ -312,7 +341,7 @@ export async function deleteSharedTask(listId, taskId) {
   }
 }
 
-export function subscribeToSharedTasks(listId, callback) {
+export function subscribeToSharedTasks(listId, callback, onError) {
   if (!listId) {
     throw new Error("Impossible d'ecouter les taches partagees: listId manquant.");
   }
@@ -330,9 +359,9 @@ export function subscribeToSharedTasks(listId, callback) {
         callback(snapshot.docs.map(mapSharedTask));
       },
       (error) => {
-        throw new Error(
-          `Erreur lors de l'ecoute des taches partagees: ${error?.message ?? "inconnue"}.`
-        );
+        if (typeof onError === "function") {
+          onError(`Erreur lors de l'ecoute des taches partagees: ${error?.message ?? "inconnue"}.`);
+        }
       }
     );
   } catch (error) {
