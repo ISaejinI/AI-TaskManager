@@ -12,6 +12,7 @@ Quand on te demande de relire du code, vérifie :
 3. Lisibilité : noms clairs, fonctions courtes, pas de logique imbriquée
 4. Performance : pas de calculs inutiles dans le JSX
 5. Structure : pas de logique métier dans les pages ou composants, placer la logique métier dans des hooks réutilisables 
+6. Structure : fais attention au principe DRY
 
 Format de réponse :
 
