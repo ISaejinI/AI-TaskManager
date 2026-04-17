@@ -1,9 +1,9 @@
 "use client";
 
-import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
-import { db } from "../lib/firebase";
+import { useMemo, useState } from "react";
+import useUserEmailMap from "../hooks/useUserEmailMap";
 import AddTaskForm from "./AddTaskForm";
+import TaskItem from "./TaskItem";
 
 function formatMember(member) {
   if (typeof member === "string") {
@@ -34,15 +34,25 @@ export default function SharedListView({
   const [memberEmail, setMemberEmail] = useState("");
   const [memberError, setMemberError] = useState(null);
   const [isAddingMember, setIsAddingMember] = useState(false);
-  const [userEmailById, setUserEmailById] = useState({});
 
   const safeList = list ?? {};
   const listName = String(safeList.name ?? "").trim() || "Liste partagee";
   const isOwner = Boolean(currentUserId) && safeList.ownerId === currentUserId;
   const safeTasks = useMemo(() => (Array.isArray(tasks) ? tasks : []), [tasks]);
+  const sourceMembers = Array.isArray(members) ? members : safeList.members;
+
+  const userIdsToResolve = useMemo(() => {
+    const memberIds = (Array.isArray(sourceMembers) ? sourceMembers : [])
+      .map((member) => formatMember(member).id)
+      .filter(Boolean);
+    const taskUserIds = safeTasks.map((task) => String(task?.addedBy ?? "").trim()).filter(Boolean);
+
+    return Array.from(new Set([...memberIds, ...taskUserIds]));
+  }, [sourceMembers, safeTasks]);
+
+  const userEmailById = useUserEmailMap(userIdsToResolve);
 
   const normalizedMembers = useMemo(() => {
-    const sourceMembers = Array.isArray(members) ? members : safeList.members;
     return (Array.isArray(sourceMembers) ? sourceMembers : []).map((member) => {
       const formattedMember = formatMember(member);
       const resolvedEmail = userEmailById[formattedMember.id];
@@ -52,55 +62,7 @@ export default function SharedListView({
         label: resolvedEmail || formattedMember.label,
       };
     });
-  }, [members, safeList.members, userEmailById]);
-
-  useEffect(() => {
-    const sourceMembers = Array.isArray(members) ? members : safeList.members;
-    const memberIds = (Array.isArray(sourceMembers) ? sourceMembers : [])
-      .map((member) => formatMember(member).id)
-      .filter(Boolean);
-    const taskUserIds = safeTasks
-      .map((task) => String(task?.addedBy ?? "").trim())
-      .filter(Boolean);
-
-    const idsToResolve = Array.from(new Set([...memberIds, ...taskUserIds]));
-
-    if (idsToResolve.length === 0) {
-      setUserEmailById({});
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchUserEmails = async () => {
-      const resolvedEntries = await Promise.all(
-        idsToResolve.map(async (userId) => {
-          try {
-            const userSnapshot = await getDoc(doc(db, "users", userId));
-            const userData = userSnapshot.exists() ? userSnapshot.data() : null;
-            const email =
-              typeof userData?.email === "string" && userData.email.trim()
-                ? userData.email.trim()
-                : null;
-
-            return [userId, email];
-          } catch {
-            return [userId, null];
-          }
-        })
-      );
-
-      if (!cancelled) {
-        setUserEmailById(Object.fromEntries(resolvedEntries.filter(([, email]) => Boolean(email))));
-      }
-    };
-
-    fetchUserEmails();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [members, safeList.members, safeTasks]);
+  }, [sourceMembers, userEmailById]);
 
   const handleAddMemberSubmit = async (event) => {
     event.preventDefault();
@@ -230,71 +192,25 @@ export default function SharedListView({
             {safeTasks.map((task) => {
               const taskTitle = String(task?.title ?? "").trim() || "Tache sans titre";
               const taskId = task?.id ?? taskTitle;
-              const formattedDueDate = task?.dueDate
-                ? new Date(task.dueDate).toLocaleDateString("fr-FR")
-                : null;
 
               return (
-                <article
+                <TaskItem
                   key={taskId}
-                  className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient"
-                >
-                  <div className="flex items-start gap-4">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(task?.completed)}
-                      onChange={() => handleToggleTask(task)}
-                      aria-label={`Marquer la tache ${taskTitle} comme completee`}
-                      className="mt-1 h-6 w-6 cursor-pointer appearance-none rounded-full border-2 border-outline-variant bg-surface checked:border-primary checked:bg-primary checked:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    />
-
-                    <div className="flex-1">
-                      <h4
-                        className={`font-body text-title-lg font-semibold text-on-surface ${
-                          task?.completed ? "line-through opacity-60" : ""
-                        }`}
-                      >
-                        {taskTitle}
-                      </h4>
-                      {task?.description ? (
-                        <p className="mt-2 text-body-md text-on-surface-variant">{task.description}</p>
-                      ) : null}
-                      {formattedDueDate ? (
-                        <p className="mt-2 text-label-md text-on-surface-variant">
-                          Date de fin : {formattedDueDate}
-                        </p>
-                      ) : null}
-                      <p className="mt-2 text-label-md text-on-surface-variant">
-                        Ajoutee par :{" "}
-                        {userEmailById[String(task?.addedBy ?? "")] ??
-                          String(task?.addedByEmail ?? task?.addedBy ?? "Utilisateur inconnu")}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => onDeleteTask?.(task?.id)}
-                      aria-label={`Supprimer la tache ${taskTitle}`}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-danger text-surface-container-lowest transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M8 6V4h8v2" />
-                        <path d="M19 6l-1 14H6L5 6" />
-                        <path d="M10 11v6" />
-                        <path d="M14 11v6" />
-                      </svg>
-                    </button>
-                  </div>
-                </article>
+                  title={taskTitle}
+                  description={task?.description}
+                  dueDate={task?.dueDate}
+                  completed={Boolean(task?.completed)}
+                  priority={task?.priority}
+                  authorLabel={
+                    userEmailById[String(task?.addedBy ?? "")] ??
+                    String(task?.addedByEmail ?? task?.addedBy ?? "Utilisateur inconnu")
+                  }
+                  dueDateLabel="Date de fin"
+                  headingLevel={4}
+                  onToggle={() => handleToggleTask(task)}
+                  onDelete={() => onDeleteTask?.(task?.id)}
+                  deleteAriaLabel={`Supprimer la tache ${taskTitle}`}
+                />
               );
             })}
           </div>

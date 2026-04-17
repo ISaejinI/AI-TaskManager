@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { buildRequiredFieldErrors, hasFieldErrors } from "../lib/formValidation";
 
 export default function LoginForm() {
   const { signIn, signInWithGoogle, error } = useAuth();
@@ -21,21 +22,19 @@ export default function LoginForm() {
   const passwordErrorId = "login-password-error";
 
   const validateFields = () => {
-    const nextFieldErrors = {
-      email: null,
-      password: null,
-    };
-
-    if (!email.trim()) {
-      nextFieldErrors.email = "L'adresse e-mail est requise.";
-    }
-
-    if (!password.trim()) {
-      nextFieldErrors.password = "Le mot de passe est requis.";
-    }
+    const nextFieldErrors = buildRequiredFieldErrors({
+      email: {
+        value: email,
+        message: "L'adresse e-mail est requise.",
+      },
+      password: {
+        value: password,
+        message: "Le mot de passe est requis.",
+      },
+    });
 
     setFieldErrors(nextFieldErrors);
-    return !nextFieldErrors.email && !nextFieldErrors.password;
+    return !hasFieldErrors(nextFieldErrors);
   };
 
   const handleSubmit = async (event) => {

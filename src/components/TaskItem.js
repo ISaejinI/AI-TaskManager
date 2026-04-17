@@ -18,10 +18,14 @@ export default function TaskItem({
   dueDate,
   addedBy,
   addedByEmail,
+  authorLabel,
   priority,
   completed,
   onToggle,
   onDelete,
+  dueDateLabel = "Date limite",
+  headingLevel = 3,
+  deleteAriaLabel,
 }) {
   const priorityClass = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.weak;
   const priorityLabel = PRIORITY_LABELS[priority] ?? PRIORITY_LABELS.weak;
@@ -42,7 +46,9 @@ export default function TaskItem({
     parsedDueDate && !Number.isNaN(parsedDueDate.getTime())
       ? parsedDueDate.toLocaleDateString("fr-FR")
       : null;
-  const authorLabel = String(addedByEmail ?? addedBy ?? "").trim();
+  const resolvedAuthorLabel = String(authorLabel ?? addedByEmail ?? addedBy ?? "").trim();
+  const HeadingTag = headingLevel === 4 ? "h4" : "h3";
+  const resolvedDeleteAriaLabel = deleteAriaLabel ?? `Supprimer la tache ${title}`;
 
   return (
     <article className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient">
@@ -56,11 +62,11 @@ export default function TaskItem({
         />
 
         <div className="flex-1">
-          <h3
+          <HeadingTag
             className={`font-body text-title-lg font-semibold text-on-surface ${completed ? "opacity-60 line-through" : ""}`}
           >
             {title}
-          </h3>
+          </HeadingTag>
           {normalizedDescription ? (
             <p className="mt-2 text-body-md text-on-surface-variant">
               {normalizedDescription}
@@ -68,11 +74,13 @@ export default function TaskItem({
           ) : null}
           {formattedDueDate ? (
             <p className="mt-2 text-label-md text-on-surface-variant">
-              Date limite : {formattedDueDate}
+              {dueDateLabel} : {formattedDueDate}
             </p>
           ) : null}
-          {authorLabel ? (
-            <p className="mt-2 text-label-md text-on-surface-variant">Ajoutee par : {authorLabel}</p>
+          {resolvedAuthorLabel ? (
+            <p className="mt-2 text-label-md text-on-surface-variant">
+              Ajoutee par : {resolvedAuthorLabel}
+            </p>
           ) : null}
 
           <span
@@ -85,7 +93,7 @@ export default function TaskItem({
         <button
           type="button"
           onClick={onDelete}
-          aria-label={`Supprimer la tâche ${title}`}
+          aria-label={resolvedDeleteAriaLabel}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-danger text-surface-container-lowest transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
         >
           <svg

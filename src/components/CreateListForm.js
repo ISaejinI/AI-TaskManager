@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildRequiredFieldErrors } from "../lib/formValidation";
 
 export default function CreateListForm({ onCreateList }) {
   const [name, setName] = useState("");
@@ -14,9 +15,15 @@ export default function CreateListForm({ onCreateList }) {
     event.preventDefault();
 
     const normalizedName = name.trim();
+    const fieldErrors = buildRequiredFieldErrors({
+      name: {
+        value: normalizedName,
+        message: "Le nom de la liste est obligatoire.",
+      },
+    });
 
-    if (!normalizedName) {
-      setError("Le nom de la liste est obligatoire.");
+    if (fieldErrors.name) {
+      setError(fieldErrors.name);
       return;
     }
 

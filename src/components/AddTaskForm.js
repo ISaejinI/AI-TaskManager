@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildRequiredFieldErrors } from "../lib/formValidation";
 
 export default function AddTaskForm({ onAddTask }) {
   const [title, setTitle] = useState("");
@@ -17,9 +18,15 @@ export default function AddTaskForm({ onAddTask }) {
     event.preventDefault();
 
     const normalizedTitle = title.trim();
+    const fieldErrors = buildRequiredFieldErrors({
+      title: {
+        value: normalizedTitle,
+        message: "Le titre de la tache est obligatoire.",
+      },
+    });
 
-    if (!normalizedTitle) {
-      setError("Le titre de la tache est obligatoire.");
+    if (fieldErrors.title) {
+      setError(fieldErrors.title);
       return;
     }
 
