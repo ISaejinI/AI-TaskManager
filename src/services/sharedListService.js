@@ -43,6 +43,8 @@ function mapSharedTask(taskDoc) {
   return {
     id: taskDoc.id,
     title: data.title ?? "",
+    description: data.description ?? "",
+    dueDate: data.dueDate ?? null,
     completed: Boolean(data.completed),
     priority: data.priority ?? "medium",
     createdAt: data.createdAt ?? null,
@@ -286,6 +288,8 @@ export async function addSharedTask(listId, userId, task = {}) {
 
   try {
     const title = typeof task.title === "string" ? task.title.trim() : "";
+    const description = typeof task.description === "string" ? task.description.trim() : "";
+    const dueDate = typeof task.dueDate === "string" ? task.dueDate : null;
 
     if (!title) {
       throw new Error("Le titre de la tache partagee est requis.");
@@ -293,6 +297,8 @@ export async function addSharedTask(listId, userId, task = {}) {
 
     await addDoc(getSharedListTasksCollection(listId), {
       title,
+      description,
+      dueDate,
       completed: Boolean(task.completed),
       priority: task.priority ?? "medium",
       createdAt: serverTimestamp(),

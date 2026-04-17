@@ -56,12 +56,12 @@ export default function DashboardPage() {
   const searchedTasks = useTaskSearch(tasks, searchQuery);
   const visibleTasks = useTaskFilter(searchedTasks, filter, sortOrder);
 
-  const handleAddTask = async ({ title, priority }) => {
+  const handleAddTask = async ({ title, description, dueDate, priority }) => {
     if (!user?.uid) {
       throw new Error("Aucun utilisateur connecte.");
     }
 
-    await addTask(user.uid, { title, priority });
+    await addTask(user.uid, { title, description, dueDate, priority });
   };
 
   const handleToggleTask = async (id) => {

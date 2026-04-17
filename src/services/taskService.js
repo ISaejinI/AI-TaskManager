@@ -31,6 +31,8 @@ export async function getUserTasks(userId) {
       return {
         id: taskDoc.id,
         title: data.title ?? "",
+        description: data.description ?? "",
+        dueDate: data.dueDate ?? null,
         completed: Boolean(data.completed),
         priority: data.priority ?? "medium",
         createdAt: data.createdAt ?? null,
@@ -50,6 +52,8 @@ export async function addTask(userId, task = {}) {
 
   try {
     const title = typeof task.title === "string" ? task.title.trim() : "";
+    const description = typeof task.description === "string" ? task.description.trim() : "";
+    const dueDate = typeof task.dueDate === "string" ? task.dueDate : null;
 
     if (!title) {
       throw new Error("Le titre de la tache est requis.");
@@ -57,6 +61,8 @@ export async function addTask(userId, task = {}) {
 
     await addDoc(getUserTasksCollection(userId), {
       title,
+      description,
+      dueDate,
       completed: false,
       priority: task.priority ?? "medium",
       createdAt: serverTimestamp(),
@@ -125,6 +131,8 @@ export function subscribeToTasks(userId, callback, onError) {
           return {
             id: taskDoc.id,
             title: data.title ?? "",
+          description: data.description ?? "",
+          dueDate: data.dueDate ?? null,
             completed: Boolean(data.completed),
             priority: data.priority ?? "medium",
             createdAt: data.createdAt ?? null,

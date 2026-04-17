@@ -4,6 +4,8 @@ import { useState } from "react";
 
 export default function AddTaskForm({ onAddTask }) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("medium");
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,8 +31,15 @@ export default function AddTaskForm({ onAddTask }) {
     try {
       setIsSubmitting(true);
       setError(null);
-      await onAddTask({ title: normalizedTitle, priority });
+      await onAddTask({
+        title: normalizedTitle,
+        description: description.trim(),
+        dueDate: dueDate || null,
+        priority,
+      });
       setTitle("");
+      setDescription("");
+      setDueDate("");
       setPriority("medium");
     } catch (submitError) {
       setError(submitError?.message ?? "Une erreur est survenue lors de l'ajout de la tache.");
@@ -54,7 +63,7 @@ export default function AddTaskForm({ onAddTask }) {
         </p>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
         <div className="flex w-full flex-col gap-2">
           <label htmlFor="add-task-title" className="text-label-md font-medium text-on-surface">
             Titre
@@ -76,29 +85,60 @@ export default function AddTaskForm({ onAddTask }) {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-2 sm:w-52">
-          <label htmlFor="add-task-priority" className="text-label-md font-medium text-on-surface">
-            Priorite
+        <div className="flex w-full flex-col gap-2">
+          <label htmlFor="add-task-description" className="text-label-md font-medium text-on-surface">
+            Description (facultative)
           </label>
-          <select
-            id="add-task-priority"
-            value={priority}
-            onChange={(event) => setPriority(event.target.value)}
-            className="rounded-lg border border-outline-variant bg-surface px-4 py-3 text-body-md text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <option value="strong">Haute</option>
-            <option value="medium">Moyenne</option>
-            <option value="weak">Basse</option>
-          </select>
+          <textarea
+            id="add-task-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="Ajouter une description de la tache"
+            rows={3}
+            className="w-full resize-y rounded-lg border border-outline-variant bg-surface px-4 py-3 text-body-md text-on-surface placeholder:text-on-surface-variant/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          />
         </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-full bg-primary px-6 py-3 text-body-md font-semibold text-surface-container-lowest transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? "Ajout..." : "Ajouter"}
-        </button>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="add-task-due-date" className="text-label-md font-medium text-on-surface">
+              Date de rendu
+            </label>
+            <input
+              id="add-task-due-date"
+              type="date"
+              value={dueDate}
+              onChange={(event) => setDueDate(event.target.value)}
+              className="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 text-body-md text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="add-task-priority" className="text-label-md font-medium text-on-surface">
+              Priorite
+            </label>
+            <select
+              id="add-task-priority"
+              value={priority}
+              onChange={(event) => setPriority(event.target.value)}
+              className="rounded-lg border border-outline-variant bg-surface px-4 py-3 text-body-md text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <option value="strong">Haute</option>
+              <option value="medium">Moyenne</option>
+              <option value="weak">Basse</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-full bg-primary px-6 py-3 text-body-md font-semibold text-surface-container-lowest transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? "Ajout..." : "Ajouter"}
+          </button>
+        </div>
       </form>
     </section>
   );

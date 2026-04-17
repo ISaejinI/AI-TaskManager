@@ -23,9 +23,23 @@ export default function TaskItem({
 }) {
   const priorityClass = PRIORITY_STYLES[priority] ?? PRIORITY_STYLES.weak;
   const priorityLabel = PRIORITY_LABELS[priority] ?? PRIORITY_LABELS.weak;
-  const formattedDueDate = dueDate
-    ? new Date(dueDate).toLocaleDateString("fr-FR")
-    : null;
+  const normalizedDescription = typeof description === "string" ? description.trim() : "";
+
+  let parsedDueDate = null;
+  if (dueDate instanceof Date) {
+    parsedDueDate = dueDate;
+  } else if (typeof dueDate?.toDate === "function") {
+    parsedDueDate = dueDate.toDate();
+  } else if (typeof dueDate?.seconds === "number") {
+    parsedDueDate = new Date(dueDate.seconds * 1000);
+  } else if (typeof dueDate === "string" && dueDate.trim()) {
+    parsedDueDate = new Date(dueDate);
+  }
+
+  const formattedDueDate =
+    parsedDueDate && !Number.isNaN(parsedDueDate.getTime())
+      ? parsedDueDate.toLocaleDateString("fr-FR")
+      : null;
 
   return (
     <article className="w-full rounded-xl bg-surface-container-lowest p-6 shadow-ambient">
@@ -44,14 +58,14 @@ export default function TaskItem({
           >
             {title}
           </h3>
-          {description ? (
+          {normalizedDescription ? (
             <p className="mt-2 text-body-md text-on-surface-variant">
-              {description}
+              {normalizedDescription}
             </p>
           ) : null}
           {formattedDueDate ? (
             <p className="mt-2 text-label-md text-on-surface-variant">
-              Date de fin : {formattedDueDate}
+              Date limite : {formattedDueDate}
             </p>
           ) : null}
 

@@ -171,6 +171,9 @@ export default function SharedListView({
             {safeTasks.map((task) => {
               const taskTitle = String(task?.title ?? "").trim() || "Tache sans titre";
               const taskId = task?.id ?? taskTitle;
+              const formattedDueDate = task?.dueDate
+                ? new Date(task.dueDate).toLocaleDateString("fr-FR")
+                : null;
 
               return (
                 <article
@@ -194,6 +197,14 @@ export default function SharedListView({
                       >
                         {taskTitle}
                       </h4>
+                      {task?.description ? (
+                        <p className="mt-2 text-body-md text-on-surface-variant">{task.description}</p>
+                      ) : null}
+                      {formattedDueDate ? (
+                        <p className="mt-2 text-label-md text-on-surface-variant">
+                          Date de fin : {formattedDueDate}
+                        </p>
+                      ) : null}
                       <p className="mt-2 text-label-md text-on-surface-variant">
                         Ajoutee par : {String(task?.addedBy ?? "Utilisateur inconnu")}
                       </p>
