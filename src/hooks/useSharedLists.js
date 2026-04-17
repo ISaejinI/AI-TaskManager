@@ -11,42 +11,32 @@ export default function useSharedLists(userId) {
 
   useEffect(() => {
     if (!userId) {
-      setSharedLists([]);
-      setLoading(false);
       return undefined;
     }
 
-    setLoading(true);
-    setError(null);
+    const unsubscribe = subscribeToSharedLists(
+      userId,
+      (lists) => {
+        setSharedLists(Array.isArray(lists) ? lists : []);
+        setLoading(false);
+      },
+      (subscriptionError) => {
+        setError(subscriptionError);
+        setLoading(false);
+      }
+    );
 
-    try {
-      const unsubscribe = subscribeToSharedLists(
-        userId,
-        (lists) => {
-          setSharedLists(Array.isArray(lists) ? lists : []);
-          setLoading(false);
-        },
-        (subscriptionError) => {
-          setError(subscriptionError);
-          setLoading(false);
-        }
-      );
-
-      return unsubscribe;
-    } catch (serviceError) {
-      setError(serviceError?.message ?? "Impossible de charger les listes partagees.");
-      setLoading(false);
-      return undefined;
-    }
+    return unsubscribe;
   }, [userId]);
 
   useEffect(() => {
-    if (sharedLists.length === 0) {
-      setTaskStatsByListId({});
+    const subscribableLists = sharedLists.filter((list) => Boolean(list?.id) && Boolean(list?.createdAt));
+
+    if (subscribableLists.length === 0) {
       return undefined;
     }
 
-    const unsubscribeByListId = sharedLists.map((list) =>
+    const unsubscribeByListId = subscribableLists.map((list) =>
       subscribeToSharedTasks(
         list.id,
         (tasks) => {
@@ -62,7 +52,19 @@ export default function useSharedLists(userId) {
             },
           }));
         },
-        (subscriptionError) => {
+        (subscriptionError, errorCode) => {
+          // Le flux de stats est secondaire; on ignore le refus transitoire lors d'une creation.
+          if (errorCode === "permission-denied") {
+            setTaskStatsByListId((previousStats) => ({
+              ...previousStats,
+              [list.id]: {
+                totalTasks: 0,
+                completedTasks: 0,
+              },
+            }));
+            return;
+          }
+
           setError(subscriptionError);
         }
       )
@@ -94,9 +96,9 @@ export default function useSharedLists(userId) {
   );
 
   return {
-    sharedLists,
-    sharedListsWithStats,
-    loading,
+    sharedLists: userId ? sharedLists : [],
+    sharedListsWithStats: userId ? sharedListsWithStats : [],
+    loading: userId ? loading : false,
     error,
     setError,
   };

@@ -153,7 +153,7 @@ export default function LoginForm() {
         <p className="text-body-md text-on-surface-variant">
           Pas encore de compte ?{" "}
           <Link href="/signup" className="font-semibold text-primary hover:text-primary-strong">
-            S'inscrire
+            S&apos;inscrire
           </Link>
         </p>
       </form>

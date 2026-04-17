@@ -15,37 +15,29 @@ export default function useDashboardTasks(userId) {
 
   useEffect(() => {
     if (!userId) {
-      setTasks([]);
-      setLoading(false);
       return undefined;
     }
 
-    setLoading(true);
-    setError(null);
+    const unsubscribe = subscribeToTasks(
+      userId,
+      (nextTasks) => {
+        setTasks(nextTasks);
+        setError(null);
+        setLoading(false);
+      },
+      (subscriptionError) => {
+        setError(subscriptionError);
+        setLoading(false);
+      }
+    );
 
-    try {
-      const unsubscribe = subscribeToTasks(
-        userId,
-        (nextTasks) => {
-          setTasks(nextTasks);
-          setError(null);
-          setLoading(false);
-        },
-        (subscriptionError) => {
-          setError(subscriptionError);
-          setLoading(false);
-        }
-      );
-
-      return unsubscribe;
-    } catch (serviceError) {
-      setLoading(false);
-      setError(serviceError?.message ?? "Une erreur est survenue. Veuillez reessayer.");
-      return undefined;
-    }
+    return unsubscribe;
   }, [userId]);
 
-  const searchedTasks = useTaskSearch(tasks, searchQuery);
+  const safeTasks = userId ? tasks : [];
+  const safeLoading = userId ? loading : false;
+
+  const searchedTasks = useTaskSearch(safeTasks, searchQuery);
   const visibleTasks = useTaskFilter(searchedTasks, filter, sortOrder);
 
   const createTask = async ({ title, description, dueDate, priority }) => {
@@ -91,7 +83,7 @@ export default function useDashboardTasks(userId) {
   };
 
   return {
-    tasks,
+    tasks: safeTasks,
     visibleTasks,
     searchQuery,
     setSearchQuery,
@@ -99,7 +91,7 @@ export default function useDashboardTasks(userId) {
     setFilter,
     sortOrder,
     setSortOrder,
-    loading,
+    loading: safeLoading,
     error,
     createTask,
     toggleTask,

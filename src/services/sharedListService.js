@@ -30,6 +30,10 @@ function getFirestoreErrorMessage(error) {
     case "unauthenticated":
       return "Vous devez etre connecte pour effectuer cette action.";
     default:
+      if (!code && typeof error?.message === "string" && error.message.trim()) {
+        return error.message;
+      }
+
       return "Une erreur est survenue. Veuillez reessayer.";
   }
 }
@@ -146,7 +150,7 @@ export function subscribeToSharedLists(userId, callback, onError) {
       },
       (error) => {
         if (typeof onError === "function") {
-          onError(getFirestoreErrorMessage(error));
+          onError(getFirestoreErrorMessage(error), error?.code ?? "");
         }
       }
     );
@@ -367,7 +371,7 @@ export function subscribeToSharedTasks(listId, callback, onError) {
       },
       (error) => {
         if (typeof onError === "function") {
-          onError(getFirestoreErrorMessage(error));
+          onError(getFirestoreErrorMessage(error), error?.code ?? "");
         }
       }
     );

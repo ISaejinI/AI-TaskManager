@@ -50,10 +50,10 @@ export default function FilterBar({
           onChange={(e) => onSortChange(e.target.value)}
           className="rounded-full bg-surface-container-lowest px-4 py-3 text-body-md font-semibold text-on-surface shadow-ambient focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <option value="dateDesc">Date (plus recente d'abord)</option>
-          <option value="dateAsc">Date (plus ancienne d'abord)</option>
-          <option value="priorityDesc">Priorite (elevee vers basse)</option>
-          <option value="priorityAsc">Priorite (basse vers elevee)</option>
+          <option value="dateDesc">Date (plus recente d&apos;abord)</option>
+          <option value="dateAsc">Date (plus ancienne d&apos;abord)</option>
+          <option value="priorityDesc">Priorite (élevée vers basse)</option>
+          <option value="priorityAsc">Priorite (basse vers élevée)</option>
         </select>
       </div>
     </div>

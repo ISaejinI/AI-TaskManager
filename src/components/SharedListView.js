@@ -39,7 +39,7 @@ export default function SharedListView({
   const safeList = list ?? {};
   const listName = String(safeList.name ?? "").trim() || "Liste partagee";
   const isOwner = Boolean(currentUserId) && safeList.ownerId === currentUserId;
-  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeTasks = useMemo(() => (Array.isArray(tasks) ? tasks : []), [tasks]);
 
   const normalizedMembers = useMemo(() => {
     const sourceMembers = Array.isArray(members) ? members : safeList.members;

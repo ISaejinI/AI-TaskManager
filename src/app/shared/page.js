@@ -36,13 +36,8 @@ export default function SharedListsPage() {
 
   useEffect(() => {
     if (!selectedList?.id) {
-      setSelectedListTasks([]);
-      setTasksLoading(false);
       return undefined;
     }
-
-    setTasksLoading(true);
-    setError(null);
 
     let unsubscribe = undefined;
 
@@ -77,7 +72,7 @@ export default function SharedListsPage() {
         unsubscribe();
       }
     };
-  }, [selectedList?.id]);
+  }, [selectedList?.id, setError]);
 
   const handleCreateList = async (name) => {
     if (!user?.uid) {
@@ -88,6 +83,9 @@ export default function SharedListsPage() {
   };
 
   const handleOpenList = (list) => {
+    setTasksLoading(true);
+    setError(null);
+    setSelectedListTasks([]);
     setSelectedListId(list?.id ?? null);
   };
 
@@ -195,7 +193,7 @@ export default function SharedListsPage() {
               ) : null}
               <SharedListView
                 list={selectedList}
-                tasks={selectedListTasks}
+                tasks={selectedList?.id ? selectedListTasks : []}
                 currentUserId={user?.uid ?? ""}
                 members={selectedList.members}
                 onAddMember={handleAddMember}
@@ -203,7 +201,11 @@ export default function SharedListsPage() {
                 onAddTask={handleAddSharedTask}
                 onUpdateTask={handleUpdateSharedTask}
                 onDeleteTask={handleDeleteSharedTask}
-                onBack={() => setSelectedListId(null)}
+                onBack={() => {
+                  setSelectedListTasks([]);
+                  setTasksLoading(false);
+                  setSelectedListId(null);
+                }}
               />
             </>
           ) : (

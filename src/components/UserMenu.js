@@ -59,7 +59,7 @@ export default function UserMenu() {
         role="button"
         tabIndex={0}
       >
-        S'inscrire
+        S&apos;inscrire
       </Link>
     </section>
   );
